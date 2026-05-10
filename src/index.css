@@ -77,13 +77,79 @@ h1, h2, h3, .cursive {
   100% { transform: translate(var(--x), 100vh) rotate(var(--r)); opacity: 0; }
 }
 
+@keyframes butterflies {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translate(var(--x), -110vh) rotate(var(--r)); opacity: 0; }
+}
+
 /* Floating Elements */
 .floating-particle {
   position: fixed;
-  top: -10%;
+  top: 110%; /* Start from bottom for butterflies */
   pointer-events: none;
   z-index: 0;
+}
+
+.particle-down {
+  top: -10%;
   animation: petals linear infinite;
+}
+
+.particle-up {
+  animation: butterflies linear infinite;
+}
+
+/* Lightbox Modal */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  cursor: pointer;
+}
+
+.lightbox-image {
+  max-width: 90%;
+  max-height: 90vh;
+  border-radius: 10px;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+}
+
+/* Signature Section */
+.signature-section {
+  text-align: center;
+  padding: 60px 20px;
+  margin-top: 40px;
+}
+
+.signature-text {
+  font-family: 'Great Vibes', cursive;
+  font-size: 4rem;
+  color: var(--deep-plum);
+  display: inline-block;
+  position: relative;
+}
+
+.signature-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw 3s ease-in-out forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* Hero Section */

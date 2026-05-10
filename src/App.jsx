@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { motion, useScroll, useSpring } from 'framer-motion';
-import { Heart, Flower, Music, Volume2, VolumeX } from 'lucide-react';
+import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
+import { Heart, Flower, Music, Volume2, VolumeX, X } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 // Floating Particle Component
 const FloatingParticle = ({ type }) => {
   const [style, setStyle] = useState({});
+  const isUp = type === 'butterfly';
 
   useEffect(() => {
     const x = Math.random() * 100;
@@ -13,8 +15,8 @@ const FloatingParticle = ({ type }) => {
     const delay = Math.random() * 10;
     
     setStyle({
-      '--x': `${(Math.random() - 0.5) * 200}px`,
-      '--r': `${Math.random() * 360}deg`,
+      '--x': `${(Math.random() - 0.5) * 400}px`,
+      '--r': `${Math.random() * 720}deg`,
       left: `${x}%`,
       animationDuration: `${duration}s`,
       animationDelay: `${delay}s`,
@@ -24,20 +26,52 @@ const FloatingParticle = ({ type }) => {
   }, []);
 
   return (
-    <div className="floating-particle" style={style}>
-      {type === 'heart' ? '❤️' : type === 'flower' ? '🌸' : '✨'}
+    <div className={`floating-particle ${isUp ? 'particle-up' : 'particle-down'}`} style={style}>
+      {type === 'heart' ? '❤️' : type === 'flower' ? '🌸' : type === 'butterfly' ? '🦋' : '✨'}
     </div>
   );
 };
 
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
     restDelta: 0.001
   });
+
+  const handleCelebrate = () => {
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 3000 };
+
+    const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        colors: ['#FFB7C5', '#E6E6FA', '#FFF0F5']
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        colors: ['#FFB7C5', '#E6E6FA', '#FFF0F5']
+      });
+    }, 250);
+  };
 
   const images = [
     '/images/img1.jpeg',
@@ -51,8 +85,11 @@ function App() {
     '/images/image_9.jpeg',
   ];
 
-  const particles = Array.from({ length: 30 }).map((_, i) => (
-    <FloatingParticle key={i} type={i % 3 === 0 ? 'heart' : i % 3 === 1 ? 'flower' : 'sparkle'} />
+  const particles = Array.from({ length: 40 }).map((_, i) => (
+    <FloatingParticle 
+      key={i} 
+      type={i % 4 === 0 ? 'heart' : i % 4 === 1 ? 'flower' : i % 4 === 2 ? 'butterfly' : 'sparkle'} 
+    />
   ));
 
   return (
@@ -72,6 +109,44 @@ function App() {
 
       {/* Floating Particles Background */}
       {particles}
+
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div 
+            className="lightbox-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedImage(null)}
+          >
+            <motion.div 
+              className="lightbox-content"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            >
+              <img src={selectedImage} alt="Large memory" className="lightbox-image" />
+              <button 
+                className="glass"
+                style={{
+                  position: 'absolute',
+                  top: '-50px',
+                  right: '0',
+                  padding: '10px',
+                  border: 'none',
+                  color: 'white',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setSelectedImage(null)}
+              >
+                <X size={24} />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Music Toggle */}
       <button 
@@ -101,9 +176,13 @@ function App() {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
+          style={{ cursor: 'pointer' }}
+          onClick={handleCelebrate}
+          whileHover={{ scale: 1.05 }}
         >
           <h1 className="hero-title">Happy Mother’s Day ❤️</h1>
           <p className="hero-subtitle">For The Best Mom Ever</p>
+          <p style={{ marginTop: '10px', opacity: 0.6, fontSize: '0.9rem' }}>(Click to celebrate! ✨)</p>
         </motion.div>
         
         <motion.div
@@ -153,6 +232,8 @@ function App() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
+              onClick={() => setSelectedImage(src)}
+              style={{ cursor: 'pointer' }}
             >
               <img src={src} alt={`Memory ${index + 1}`} />
               <div className="card-overlay">
@@ -206,6 +287,28 @@ function App() {
         </div>
       </section>
 
+      {/* Animated Signature Section */}
+      <section className="signature-section">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <p style={{ fontSize: '1.5rem', marginBottom: '10px' }}>With love always,</p>
+          <div className="signature-text">
+             kisu and misu
+          </div>
+          <div style={{ marginTop: '20px' }}>
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+            >
+              ❤️
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
       {/* Footer */}
       <footer>
         <motion.p
@@ -216,14 +319,6 @@ function App() {
           Made with Love for Mom <span className="heart-footer">💖</span>
         </motion.p>
       </footer>
-
-      {/* Background Music (Simulated) */}
-      {isPlaying && (
-        <div style={{ display: 'none' }}>
-          {/* In a real scenario, we would add an <audio> tag here */}
-          {/* Since we don't have an audio file, this is just a UI toggle */}
-        </div>
-      )}
     </div>
   );
 }
