@@ -55,9 +55,9 @@ function App() {
   }, [isPlaying]);
 
   const handleCelebrate = () => {
-    const duration = 5 * 1000;
+    const duration = 3 * 1000;
     const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 45, spread: 360, ticks: 100, zIndex: 3000 };
+    const defaults = { startVelocity: 35, spread: 360, ticks: 80, zIndex: 3000 };
 
     const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
@@ -68,9 +68,8 @@ function App() {
         return clearInterval(interval);
       }
 
-      const particleCount = 150 * (timeLeft / duration);
+      const particleCount = 60 * (timeLeft / duration);
       
-      // More vibrant colors for better visibility
       const colors = ['#FF1493', '#FF69B4', '#D4AF37', '#9370DB', '#FFD700'];
       
       confetti({
@@ -79,7 +78,7 @@ function App() {
         origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
         colors: colors,
         shapes: ['heart', 'circle'],
-        scalar: 2
+        scalar: 1.2
       });
       confetti({
         ...defaults,
@@ -87,7 +86,7 @@ function App() {
         origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
         colors: colors,
         shapes: ['heart', 'circle'],
-        scalar: 2
+        scalar: 1.2
       });
     }, 250);
   };
