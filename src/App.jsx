@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
 import { Heart, Flower, Music, Volume2, VolumeX, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -35,6 +35,7 @@ const FloatingParticle = ({ type }) => {
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const audioRef = useRef(null);
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -42,10 +43,21 @@ function App() {
     restDelta: 0.001
   });
 
+  // Handle Music Play/Pause
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.play().catch(e => console.log("Audio play failed:", e));
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying]);
+
   const handleCelebrate = () => {
-    const duration = 3 * 1000;
+    const duration = 5 * 1000;
     const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 3000 };
+    const defaults = { startVelocity: 45, spread: 360, ticks: 100, zIndex: 3000 };
 
     const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
@@ -56,19 +68,26 @@ function App() {
         return clearInterval(interval);
       }
 
-      const particleCount = 50 * (timeLeft / duration);
+      const particleCount = 150 * (timeLeft / duration);
+      
+      // More vibrant colors for better visibility
+      const colors = ['#FF1493', '#FF69B4', '#D4AF37', '#9370DB', '#FFD700'];
       
       confetti({
         ...defaults,
         particleCount,
         origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-        colors: ['#FFB7C5', '#E6E6FA', '#FFF0F5']
+        colors: colors,
+        shapes: ['heart', 'circle'],
+        scalar: 2
       });
       confetti({
         ...defaults,
         particleCount,
         origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-        colors: ['#FFB7C5', '#E6E6FA', '#FFF0F5']
+        colors: colors,
+        shapes: ['heart', 'circle'],
+        scalar: 2
       });
     }, 250);
   };
@@ -94,6 +113,9 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* Background Audio */}
+      <audio ref={audioRef} src="/music.mp3" loop />
+
       {/* Progress Bar */}
       <motion.div className="progress-bar" style={{ 
         scaleX, 
@@ -182,7 +204,9 @@ function App() {
         >
           <h1 className="hero-title">Happy Mother’s Day ❤️</h1>
           <p className="hero-subtitle">For The Best Mom Ever</p>
-          <p style={{ marginTop: '10px', opacity: 0.6, fontSize: '0.9rem' }}>(Click to celebrate! ✨)</p>
+          <p style={{ marginTop: '10px', opacity: 0.6, fontSize: '1rem', fontWeight: 'bold', color: 'var(--deep-plum)' }}>
+            (Click to Celebrate! ✨)
+          </p>
         </motion.div>
         
         <motion.div
